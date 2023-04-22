@@ -65,8 +65,8 @@ Para instalar la base de datos Sakila en MySQL, se pueden seguir los siguientes 
 
 ```shell
 mysql -u root -p
-mysql> show databases;
-mysql> use sakila;
+mysql> SHOW databases;
+mysql> USE sakila;
 
 ```
 
