@@ -35,7 +35,7 @@ Salida:
 
 Respuesta:
 ```sql
--- Su respuesta aqui:
+-- la respuesta a la pregunta 1:
 SELECT c.city_id, c.city, COUNT(s.store_id) AS store_count
 FROM city c
 JOIN address a ON c.city_id = a.city_id
