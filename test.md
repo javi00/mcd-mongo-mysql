@@ -42,8 +42,6 @@ JOIN address a ON c.city_id = a.city_id
 JOIN store s ON a.address_id = s.address_id
 GROUP BY c.city, c.city_id;
 
-SELECT * FROM city JOIN WHERE city_id = 10;
-
 ```
 
 2. Listar la cantidad de películas que se hicieron por lenguaje.
@@ -64,9 +62,11 @@ Salida:
 
 Respuesta:
 ```sql
--- Su respuesta aqui:
 
-SELECT ...
+SELECT l.language_id, l.name, COUNT(f.film_id) AS film_count
+FROM language l
+LEFT JOIN film f ON l.language_id = f.language_id
+GROUP BY l.name, l.language_id;
 
 ```
 
