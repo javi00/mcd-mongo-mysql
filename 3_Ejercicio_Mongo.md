@@ -125,34 +125,37 @@ Respuesta:
 
 ```
 db.actor.aggregate([
-        {
-          $lookup: {
-            from: "film_actor",
-            localField: "_id",
-            foreignField: "actor_id",
-            as: "films"
-          }
-        },
-        {
-          $addFields: {
-            film_count: { $size: "$films" }
-          }
-        },
-        {
-          $match: {
-            film_count: { $gt: 35 }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            first_name: 1,
-            last_name: 1,
-            film_count: 1
-          }
-        }
-      ]);
-
+    {
+      $lookup: {
+        from: "film_actor",
+        localField: "_id",
+        foreignField: "actor_id",
+        as: "films"
+      }
+    },
+    {
+      $addFields: {
+        film_count: { $size: "$films" }
+      }
+    },
+    {
+      $match: {
+        film_count: { $gt: 35 }
+      }
+    },
+   
+    {
+      $project: {
+        _id: 0,
+        first_name: 1,
+        last_name: 1,
+        film_count: 1
+      }
+    },
+    {
+        $sort: {last_name:-1,film_count:-1, _id:-1 }
+      }
+  ]);
 ```
 
 3. Mostrar el listado de los 10 de actores que mas peliculas realizó en la categoria `Comedy`. (Ver lookup, unwind, match, group, limit)
@@ -176,78 +179,76 @@ Resultado:
 
 Respuesta:
 ```
- db.actor.aggregate([
+db.actor.aggregate([
 
-    {
-      $lookup: {
-        from: "film_actor",
-        localField: "_id",
-        foreignField: "actor_id",
-        as: "actor_films"
-      }
-    },
-
-    {
-      $lookup: {
-        from: "film",
-        localField: "actor_films.film_id",
-        foreignField: "_id",
-        as: "films"
-      }
-    },
-
-    {
-      $lookup: {
-        from: "category",
-        localField: "films.film_id",
-        foreignField: "_id",
-        as: "categories"
-      }
-    },
-
-    {
-      $match: {
-        "categories.name": "Comedy"
-      }
-    },
-
-    {
-      $group: {
-        _id: {
-          actor_id: "$_id",
-          first_name: "$first_name",
-          last_name: "$last_name"
-        },
-        comedy_film_count: {
-          $sum: {
-            $cond: {
-              if: {
-                $in: ["Comedy", "$categories.name"]
-              },
-              then: 1,
-              else: 0
-            }
+  {
+    $lookup: {
+      from: "film_actor",
+      localField: "_id",
+      foreignField: "actor_id",
+      as: "actor_films"
+    }
+  },
+  { $unwind:"$actor_films" },
+  {
+    $lookup: {
+      from: "film_category",
+      localField: "actor_films.film_id",
+      foreignField: "film_id",
+      as: "film_cat"
+    }
+  },
+  { $unwind:"$film_cat" },
+  {
+    $lookup: {
+      from: "category",
+      localField: "film_cat.category_id",
+      foreignField: "_id",
+      as: "categories"
+    }
+  },
+  {
+    $match: {
+      "categories.name": "Comedy"
+    }
+  },
+  {
+    $group: {
+      _id: {
+        actor_id: "$_id",
+        first_name: "$first_name",
+        last_name: "$last_name"
+      },
+      comedy_film_count: {
+        $sum: {
+          $cond: {
+            if: {
+              $in: ["Comedy", "$categories.name"]
+            },
+            then: 1,
+            else: 0
           }
         }
       }
-    },
-
-    {
-      $project: {
-        _id: 0,
-        first_name: "$_id.first_name",
-        last_name: "$_id.last_name",
-        comedy_film_count: 1
-      }
-    },
-
-    {
-      $sort: {
-        comedy_film_count: -1
-      }
-    },
-    {
-      $limit: 10
     }
-  ]);
+  },
+  {
+    $project: {
+      _id: 0,
+      first_name: "$_id.first_name",
+      last_name: "$_id.last_name",
+      comedy_film_count: 1
+    }
+  },
+
+  {
+    $sort: {
+      comedy_film_count: -1
+    }
+  },
+  {
+    $limit: 10
+  }
+  ])
+
 ```

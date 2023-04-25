@@ -1,28 +1,74 @@
 db.actor.aggregate([
-    {
-      $lookup: {
-        from: "film_actor",
-        localField: "_id",
-        foreignField: "actor_id",
-        as: "films"
-      }
-    },
-    {
-      $addFields: {
-        film_count: { $size: "$films" }
-      }
-    },
-    {
-      $match: {
-        film_count: { $gt: 35 }
-      }
-    },
-    {
-      $project: {
-        _id: 0,
-        first_name: 1,
-        last_name: 1,
-        film_count: 1
+
+  {
+    $lookup: {
+      from: "film_actor",
+      localField: "_id",
+      foreignField: "actor_id",
+      as: "actor_films"
+    }
+  },
+
+  {
+    $lookup: {
+      from: "film",
+      localField: "actor_films.film_id",
+      foreignField: "_id",
+      as: "films"
+    }
+  },
+
+  {
+    $lookup: {
+      from: "category",
+      localField: "films.film_id",
+      foreignField: "_id",
+      as: "categories"
+    }
+  },
+
+  {
+    $match: {
+      "categories.name": "Comedy"
+    }
+  },
+
+  {
+    $group: {
+      _id: {
+        actor_id: "$_id",
+        first_name: "$first_name",
+        last_name: "$last_name"
+      },
+      comedy_film_count: {
+        $sum: {
+          $cond: {
+            if: {
+              $in: ["Comedy", "$categories.name"]
+            },
+            then: 1,
+            else: 0
+          }
+        }
       }
     }
-  ]);
+  },
+
+  {
+    $project: {
+      _id: 0,
+      first_name: "$_id.first_name",
+      last_name: "$_id.last_name",
+      comedy_film_count: 1
+    }
+  },
+
+  {
+    $sort: {
+      comedy_film_count: -1
+    }
+  },
+  {
+    $limit: 10
+  }
+]);
