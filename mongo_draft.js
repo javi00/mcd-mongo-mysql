@@ -53,19 +53,18 @@ db.actor.aggregate([
   },
   {
     $project: {
-      _id: 0,
       first_name: "$_id.first_name",
       last_name: "$_id.last_name",
-      comedy_film_count: 1
+      comedy_film_count: 1,
+      _id: 0
     }
   },
-
   {
     $sort: {
       comedy_film_count: -1
     }
   },
   {
-    $limit: 10
+    $limit: 11
   }
   ])

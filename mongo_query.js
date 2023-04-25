@@ -8,31 +8,29 @@ db.actor.aggregate([
       as: "actor_films"
     }
   },
-
+  { $unwind:"$actor_films" },
   {
     $lookup: {
-      from: "film",
+      from: "film_category",
       localField: "actor_films.film_id",
-      foreignField: "_id",
-      as: "films"
+      foreignField: "film_id",
+      as: "film_cat"
     }
   },
-
+  { $unwind:"$film_cat" },
   {
     $lookup: {
       from: "category",
-      localField: "films.film_id",
+      localField: "film_cat.category_id",
       foreignField: "_id",
       as: "categories"
     }
   },
-
   {
     $match: {
       "categories.name": "Comedy"
     }
   },
-
   {
     $group: {
       _id: {
@@ -53,7 +51,6 @@ db.actor.aggregate([
       }
     }
   },
-
   {
     $project: {
       _id: 0,
@@ -71,4 +68,4 @@ db.actor.aggregate([
   {
     $limit: 10
   }
-]);
+  ])
